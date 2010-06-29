@@ -43,6 +43,7 @@
 
 class DeepZoom
   require 'rubygems'
+  require 'fileutils'
   require "RMagick"
   include Magick
 
