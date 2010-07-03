@@ -1,5 +1,10 @@
-sample_data/*
-generated_data/*
+Manifest
+*.gem
+*.gemspec
 *.log
 .tmp*
-test.rb
+*.jpg
+*.xml
+*.dzi
+*_files
+pkg

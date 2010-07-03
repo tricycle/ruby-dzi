@@ -1,31 +1,16 @@
-= DEEP ZOOM SLICER
+= Ruby Dzi Generator
+A forked project of Deep Zoom Slicer
 
-Deep Zoom Slicer slices images into several tiles and creates xml descriptor file.
+Ruby Dzi slices images into several tiles and creates dzi descriptor file.
 Sliced images are compatible for use with OpenZoom, Deep Zoom and Seadragon.
-
-== Usage
-
-  require 'deep_zoom'
-  DeepZoom.new('path/to/sample.jpg').slice!
-
-Or define custom options:
-
-  file_options  = { :dir     => 'cropped',
-                    :format  => 'png',
-                    :quality => 80 }
-  slice_options = { :tile_size => 256,
-                    :overlap   => 4 }
-
-  img_path = 'path/to/sample.jpg'
-
-  DeepZoom.new(img_path, file_options).slice!(slice_options)
-
-Remove Deep Zoom created files:
-
-  DeepZoom.new(img_path, file_options).remove_files!
 
 == Additional Information
 
+Fork Contributor: Marc Vitalis <marc.vitalis@live.com>
+
+Fork from::
+
+Deep Zoom Slicer
 Copyright (c) 2009, MESO Web Scapes, Sascha Hanssen (hanssen@meso.net)
 All rights reserved.
 
