@@ -44,7 +44,7 @@ class RubyDzi
     @format = format
     
     @levels_root_dir     = File.join(@dir, @name + '_files')
-    @xml_descriptor_path = File.join(@dir, @name + '.dzi')
+    @xml_descriptor_path = File.join(@dir, @name + '.' + @output_ext)
 
     image = get_image(@image_path)
     
@@ -68,7 +68,7 @@ class RubyDzi
         # iterate over rows
         y, row_count = 0, 0
         while y < height          
-          dest_path = File.join(current_level_dir, "#{col_count}_#{row_count}.#{@extension}")
+          dest_path = File.join(current_level_dir, "#{col_count}_#{row_count}.#{@format}")
           tile_width, tile_height = tile_dimensions(x, y, @tile_size, @overlap)
           
           save_cropped_image(image, dest_path, x, y, tile_width, tile_height, @quality)
@@ -87,7 +87,7 @@ class RubyDzi
     write_xml_descriptor(@xml_descriptor_path,
                          :tile_size => @tile_size,
                          :overlap   => @overlap,
-                         :format    => @extension,
+                         :format    => @format,
                          :width     => orig_width,
                          :height    => orig_height)
   end
