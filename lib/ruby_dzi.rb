@@ -163,7 +163,7 @@ protected
 
     if File.file?(image_path)
       image = Image::read(image_path).first
-    elsif valid_url
+    elsif valid_url?(image_path)
       f = open(image_path)
       image = Image.from_blob(f.read).first
       f.close
