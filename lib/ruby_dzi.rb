@@ -57,7 +57,6 @@ class RubyDzi
     # iterate over all levels (= zoom stages)
     max_level(orig_width, orig_height).downto(0) do |level|
       width, height = image.columns, image.rows
-      puts "level #{level} is #{width} x #{height}"
       
       current_level_dir = File.join(@levels_root_dir, level.to_s)
       FileUtils.mkdir_p(current_level_dir)
