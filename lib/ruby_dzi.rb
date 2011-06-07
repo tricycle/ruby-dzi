@@ -5,7 +5,7 @@
 #
 # Requirements: rmagick gem (tested with version 2.9.0)
 #
-# Contributor: Marc Vitalis <marc.vitalis@live.com> 
+# Contributor: Marc Vitalis <marc.vitalis@live.com>
 #
 # Original Author:: MESO Web Scapes (www.meso.net)
 # By:: Sascha Hanssen <hanssen@meso.net>
@@ -42,12 +42,12 @@ class RubyDzi
   def generate!(name, format = 'jpg')
     @name = name
     @format = format
-    
+
     @levels_root_dir     = File.join(@dir, @name + '_files')
     @xml_descriptor_path = File.join(@dir, @name + '.' + @output_ext)
 
     image = get_image(@image_path)
-    
+
     image.strip! # remove meta information
 
     orig_width, orig_height = image.columns, image.rows
@@ -57,28 +57,28 @@ class RubyDzi
     # iterate over all levels (= zoom stages)
     max_level(orig_width, orig_height).downto(0) do |level|
       width, height = image.columns, image.rows
-      
+
       current_level_dir = File.join(@levels_root_dir, level.to_s)
       FileUtils.mkdir_p(current_level_dir)
-      
+
       # iterate over columns
       x, col_count = 0, 0
-      while x < width      
+      while x < width
         # iterate over rows
         y, row_count = 0, 0
-        while y < height          
+        while y < height
           dest_path = File.join(current_level_dir, "#{col_count}_#{row_count}.#{@format}")
           tile_width, tile_height = tile_dimensions(x, y, @tile_size, @overlap)
-          
+
           save_cropped_image(image, dest_path, x, y, tile_width, tile_height, @quality)
-          
+
           y += (tile_height - (2 * @overlap))
           row_count += 1
         end
         x += (tile_width - (2 * @overlap))
         col_count += 1
       end
-      
+
       image.resize!(0.5)
     end
 
@@ -89,6 +89,9 @@ class RubyDzi
                          :format    => @format,
                          :width     => orig_width,
                          :height    => orig_height)
+
+    # destroy main image to up allocated memory
+    image.destroy!
   end
 
   def remove_files!
@@ -105,10 +108,10 @@ protected
   def tile_dimensions(x, y, tile_size, overlap)
     overlapping_tile_size = tile_size + (2 * overlap)
     border_tile_size      = tile_size + overlap
-    
+
     tile_width  = (x > 0) ? overlapping_tile_size : border_tile_size
     tile_height = (y > 0) ? overlapping_tile_size : border_tile_size
-    
+
     return tile_width, tile_height
   end
 
@@ -122,23 +125,26 @@ protected
     else
       img = Magick::Image::read(src).first
     end
-    
+
     quality = quality * 100 if quality < 1
 
     # The crop method retains the offset information in the cropped image.
     # To reset the offset data, adding true as the last argument to crop.
     cropped = img.crop(x, y, width, height, true)
     cropped.write(dest) { self.quality = quality }
+
+    # destroy images to free up allocated memory
+    cropped.destroy!
   end
-  
-  
+
+
   def write_xml_descriptor(path, attr)
     attr = { :xmlns => 'http://schemas.microsoft.com/deepzoom/2008' }.merge attr
-    
-    xml = "<?xml version='1.0' encoding='UTF-8'?>" + 
-          "<Image TileSize='#{attr[:tile_size]}' Overlap='#{attr[:overlap]}' " + 
-            "Format='#{attr[:format]}' xmlns='#{attr[:xmlns]}'>" + 
-          "<Size Width='#{attr[:width]}' Height='#{attr[:height]}'/>" + 
+
+    xml = "<?xml version='1.0' encoding='UTF-8'?>" +
+          "<Image TileSize='#{attr[:tile_size]}' Overlap='#{attr[:overlap]}' " +
+            "Format='#{attr[:format]}' xmlns='#{attr[:xmlns]}'>" +
+          "<Size Width='#{attr[:width]}' Height='#{attr[:height]}'/>" +
           "</Image>"
 
     open(path, "w") { |file| file.puts(xml) }
@@ -146,9 +152,9 @@ protected
 
   def split_to_filename_and_extension(path)
     extension = File.extname(path).gsub('.', '')
-    filename  = File.basename(path, '.' + extension) 
+    filename  = File.basename(path, '.' + extension)
     return filename, extension
-  end 
+  end
 
   def valid_url?(urlStr)
     url = URI.parse(urlStr)
