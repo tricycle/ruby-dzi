@@ -1,4 +1,4 @@
-module FileStore
+class FileStore
 
   def save_file(path, content)
     open(path, "w") { |f| f.puts(content) }

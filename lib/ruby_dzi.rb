@@ -21,13 +21,25 @@ require 'fileutils'
 require 'RMagick'
 require 'open-uri'
 require File.join(File.dirname(__FILE__), 'file_store')
+require File.join(File.dirname(__FILE__), 's3_store')
 
 class RubyDzi
   include Magick
-  include FileStore
   attr_accessor :image_path, :name, :format, :output_ext, :quality, :dir, :tile_size, :overlap
 
-  def initialize(image_path)
+  def create_store(store)
+    case store
+    when 'file'
+      FileStore.new
+    when 's3'
+      S3Store.new
+    else
+      raise "No such store : #{store}"
+    end
+  end
+
+  def initialize(image_path, store='file')
+    @store = create_store(store)
 
     #set defaults
     @quality = 75
@@ -60,7 +72,7 @@ class RubyDzi
       width, height = image.columns, image.rows
 
       current_level_dir = File.join(@levels_root_dir, level.to_s)
-      create_dir current_level_dir
+      @store.create_dir current_level_dir
 
       # iterate over columns
       x, col_count = 0, 0
@@ -96,8 +108,8 @@ class RubyDzi
   end
 
   def remove_files!
-    file_remove_res = remove_file(@xml_descriptor_path)
-    dir_remove_res  = remove_dir(@levels_root_dir)
+    file_remove_res = @store.remove_file(@xml_descriptor_path)
+    dir_remove_res  = @store.remove_dir(@levels_root_dir)
 
     file_remove_res || dir_remove_res
   end
@@ -130,7 +142,7 @@ protected
     # The crop method retains the offset information in the cropped image.
     # To reset the offset data, adding true as the last argument to crop.
     cropped = img.crop(x, y, width, height, true)
-    save_image_file cropped, dest, quality
+    @store.save_image_file cropped, dest, quality
 
     # destroy images to free up allocated memory
     cropped.destroy!
@@ -146,7 +158,7 @@ protected
           "<Size Width='#{attr[:width]}' Height='#{attr[:height]}'/>" +
           "</Image>"
 
-    save_file path, xml
+    @store.save_file path, xml
   end
 
   def split_to_filename_and_extension(path)
