@@ -25,21 +25,11 @@ require File.join(File.dirname(__FILE__), 's3_store')
 
 class RubyDzi
   include Magick
+
   attr_accessor :image_path, :name, :format, :output_ext, :quality, :dir, :tile_size, :overlap
 
-  def create_store(store)
-    case store
-    when 'file'
-      FileStore.new
-    when 's3'
-      S3Store.new
-    else
-      raise "No such store : #{store}"
-    end
-  end
-
-  def initialize(image_path, store='file')
-    @store = create_store(store)
+  def initialize(image_path, store = FileStore.new)
+    @store = store
 
     #set defaults
     @quality = 75
@@ -49,7 +39,6 @@ class RubyDzi
     @output_ext = 'dzi'
 
     @image_path = image_path
-
   end
 
   def generate!(name, format = 'jpg')
