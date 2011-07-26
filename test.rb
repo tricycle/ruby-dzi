@@ -1,4 +1,5 @@
-require 'lib/ruby_dzi'
+require File.join(File.dirname(__FILE__), 'lib/ruby_dzi')
+
 dzi = RubyDzi.new('coffee.jpg')
 puts dzi.image_path
 

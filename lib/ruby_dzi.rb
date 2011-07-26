@@ -20,10 +20,11 @@ require 'rubygems'
 require 'fileutils'
 require 'RMagick'
 require 'open-uri'
+require File.join(File.dirname(__FILE__), 'file_store')
 
 class RubyDzi
   include Magick
-
+  include FileStore
   attr_accessor :image_path, :name, :format, :output_ext, :quality, :dir, :tile_size, :overlap
 
   def initialize(image_path)
@@ -59,7 +60,7 @@ class RubyDzi
       width, height = image.columns, image.rows
 
       current_level_dir = File.join(@levels_root_dir, level.to_s)
-      FileUtils.mkdir_p(current_level_dir)
+      create_dir current_level_dir
 
       # iterate over columns
       x, col_count = 0, 0
@@ -95,12 +96,10 @@ class RubyDzi
   end
 
   def remove_files!
-    files_existed = (File.file?(@xml_descriptor_path) or File.directory?(@levels_root_dir))
+    file_remove_res = remove_file(@xml_descriptor_path)
+    dir_remove_res  = remove_dir(@levels_root_dir)
 
-    File.delete @xml_descriptor_path if File.file? @xml_descriptor_path
-    FileUtils.remove_dir @levels_root_dir if File.directory? @levels_root_dir
-
-    return files_existed
+    file_remove_res || dir_remove_res
   end
 
 protected
@@ -131,7 +130,7 @@ protected
     # The crop method retains the offset information in the cropped image.
     # To reset the offset data, adding true as the last argument to crop.
     cropped = img.crop(x, y, width, height, true)
-    cropped.write(dest) { self.quality = quality }
+    save_image_file cropped, dest, quality
 
     # destroy images to free up allocated memory
     cropped.destroy!
@@ -147,7 +146,7 @@ protected
           "<Size Width='#{attr[:width]}' Height='#{attr[:height]}'/>" +
           "</Image>"
 
-    open(path, "w") { |file| file.puts(xml) }
+    save_file path, xml
   end
 
   def split_to_filename_and_extension(path)
