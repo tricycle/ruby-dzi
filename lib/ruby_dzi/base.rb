@@ -12,7 +12,7 @@ module RubyDzi
     def initialize(image_path, store = FileStore.new)
       @store = store
 
-      #set defaults
+      # set defaults
       @quality = 75
       @dir = '.'
       @tile_size = 254
@@ -22,20 +22,45 @@ module RubyDzi
       @image_path = image_path
     end
 
-    def generate!(name, format = 'jpg')
-      @name = name
-      @format = format
-
-      @levels_root_dir     = File.join(@dir, @name + '_files')
-      @xml_descriptor_path = File.join(@dir, @name + '.' + @output_ext)
-
-      image = get_image(@image_path)
-
-      image.strip! # remove meta information
-
+    def generate_simple!(name, format = 'jpg')
+      image = setup_image_for_tile_generation(name, format)
       orig_width, orig_height = image.columns, image.rows
 
-      remove_files!
+      tile_size = [orig_width, orig_height].max
+      overlap   = 0
+
+      max_level(orig_width, orig_height).downto(0) do |level|
+        current_level_dir = File.join(@levels_root_dir, level.to_s)
+        @store.create_dir current_level_dir
+
+        dest_path = File.join(current_level_dir, "0_0.#{@format}")
+        tile_width, tile_height = tile_dimensions(0, 0, tile_size, overlap)
+
+        if level == max_level(orig_width, orig_height)
+          @original_path = dest_path
+          save_cropped_image(image, dest_path, 0, 0, tile_width, tile_height, @quality)
+        else
+          FileUtils.ln_s @original_path, dest_path
+        end
+      end
+
+      # generate xml descriptor and write file
+      write_xml_descriptor(
+        @xml_descriptor_path,
+        :tile_size => tile_size,
+        :overlap   => overlap,
+        :format    => @format,
+        :width     => orig_width,
+        :height    => orig_height
+      )
+
+      # destroy main image to free up allocated memory
+      image.destroy!
+    end
+
+    def generate!(name, format = 'jpg')
+      image = setup_image_for_tile_generation(name, format)
+      orig_width, orig_height = image.columns, image.rows
 
       # iterate over all levels (= zoom stages)
       max_level(orig_width, orig_height).downto(0) do |level|
@@ -73,7 +98,7 @@ module RubyDzi
       :width     => orig_width,
       :height    => orig_height)
 
-      # destroy main image to up allocated memory
+      # destroy main image to free up allocated memory
       image.destroy!
     end
 
@@ -84,7 +109,20 @@ module RubyDzi
       file_remove_res || dir_remove_res
     end
 
-    protected
+  protected
+
+    def setup_image_for_tile_generation(name, format)
+      @name   = name
+      @format = format
+
+      @levels_root_dir     = File.join(@dir, @name + '_files')
+      @xml_descriptor_path = File.join(@dir, @name + '.' + @output_ext)
+      remove_files!
+
+      image = get_image(@image_path)
+      image.strip! # remove meta information
+      image
+    end
 
     def tile_dimensions(x, y, tile_size, overlap)
       overlapping_tile_size = tile_size + (2 * overlap)
@@ -117,7 +155,6 @@ module RubyDzi
       # destroy images to free up allocated memory
       cropped.destroy!
     end
-
 
     def write_xml_descriptor(path, attr)
       attr = { :xmlns => 'http://schemas.microsoft.com/deepzoom/2008' }.merge attr
