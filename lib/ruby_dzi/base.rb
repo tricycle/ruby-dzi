@@ -13,10 +13,11 @@ module RubyDzi
       @store = store
 
       # set defaults
-      @quality = 75
-      @dir = '.'
-      @tile_size = 254
-      @overlap = 1
+      @quality    = 75
+      @dir        = '.'
+      @tile_size  = 254
+      @overlap    = 1
+      @min_level  = 6
       @output_ext = 'dzi'
 
       @image_path = image_path
@@ -29,7 +30,7 @@ module RubyDzi
       tile_size = [orig_width, orig_height].max
       overlap   = 0
 
-      max_level(orig_width, orig_height).downto(0) do |level|
+      max_level(orig_width, orig_height).downto(@min_level) do |level|
         current_level_dir = File.join(@levels_root_dir, level.to_s)
         @store.create_dir current_level_dir
 
@@ -63,7 +64,7 @@ module RubyDzi
       orig_width, orig_height = image.columns, image.rows
 
       # iterate over all levels (= zoom stages)
-      max_level(orig_width, orig_height).downto(0) do |level|
+      max_level(orig_width, orig_height).downto(@min_level) do |level|
         width, height = image.columns, image.rows
 
         current_level_dir = File.join(@levels_root_dir, level.to_s)
