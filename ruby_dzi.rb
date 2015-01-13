@@ -16,7 +16,7 @@
 # for the specific language governing rights and limitations under the
 # License.
 #
-require File.join(File.dirname(__FILE__), 'ruby_dzi', "base")
+require File.join(File.dirname(__FILE__), 'lib', 'ruby_dzi', "base")
 %w[file s3].each do |store|
-  require File.join(File.dirname(__FILE__), 'ruby_dzi', "#{store}_store")
+  require File.join(File.dirname(__FILE__), 'lib', 'ruby_dzi', "#{store}_store")
 end
