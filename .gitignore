@@ -1,6 +1,5 @@
 Manifest
 *.gem
-*.gemspec
 *.log
 .tmp*
 *.jpg
