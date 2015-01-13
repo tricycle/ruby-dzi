@@ -1,17 +1,23 @@
 require 'spec_helper'
+require 'fileutils'
 
 describe RubyDzi::Base do
   describe ".generate!" do
+    let(:dir_path) { File.dirname(__FILE__) + "/../#{name}_files" }
+
     subject { RubyDzi::Base.new(file_path) }
 
-    before { subject.generate!(name) }
+    before do
+      FileUtils.rm_rf(dir_path)
+      subject.generate!(name)
+    end
 
     context "local file" do
       let(:file_path) { "coffee.jpg" }
       let(:name) { "coffee" }
 
       specify { expect(subject.image_path).to eq file_path }
-      specify { expect(Dir.exists?(File.dirname(__FILE__) + "/../#{name}_files")).to eq true }
+      specify { expect(Dir.exists?(dir_path)).to eq true }
     end
 
     context "from the internetz" do
@@ -19,7 +25,7 @@ describe RubyDzi::Base do
       let(:name) { "sunset"}
 
       specify { expect(subject.image_path).to eq file_path }
-      specify { expect(Dir.exists?(File.dirname(__FILE__) + "/../#{name}_files")).to eq true }
+      specify { expect(Dir.exists?(dir_path)).to eq true }
     end
   end
 end
