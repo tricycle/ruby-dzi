@@ -1,17 +1,35 @@
-require 'aws/s3'
+require 'aws-sdk'
 
 module RubyDzi
   class S3Store
+    attr_reader :bucket_name
+
     def initialize(opts)
-      @bucket = opts.delete(:bucket_name)
-      AWS::S3::Base.establish_connection!(
-        :access_key_id     => opts[:access_key_id],
-        :secret_access_key => opts[:secret_access_key]
+      self.bucket_name = opts[:bucket_name]
+
+      Aws.config(
+        opts.slice(
+          :access_key_id,
+          :secret_access_key,
+          :use_ssl,
+          :proxy_uri
+        )
       )
     end
 
+    def s3_bucket
+      @s3_bucket ||= Aws::S3::Resource.new.bucket(bucket_name)
+    end
+
+    def s3_object(path)
+      s3_bucket.object(path)
+    end
+
     def save_file(path, content)
-      AWS::S3::S3Object.store(path, content, @bucket)
+      s3_object(path).put(
+        body: content,
+        acl:  :authenticated_read
+      )
     end
 
     def save_image_file(image, path, quality)
@@ -24,12 +42,16 @@ module RubyDzi
     end
 
     def remove_file(file)
-      AWS::S3::S3Object.delete file, @bucket
+      s3_object(file).delete
     end
     alias_method :remove_dir, :remove_file
 
     def create_dir(dir)
       # do nothing
     end
+
+protected
+    attr_writer :bucket_name
+
   end
 end
