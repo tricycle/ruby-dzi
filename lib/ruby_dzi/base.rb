@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'fileutils'
-require 'RMagick'
+require 'rmagick'
 require 'open-uri'
 
 module RubyDzi
