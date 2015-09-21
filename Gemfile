@@ -1,5 +1,9 @@
-gem 'rmagick', '~> 2.13', :require => 'RMagick'
-gem 'aws-s3', '~> 0.6', :require => 'aws/s3'
+source "https://rubygems.org"
+
+gem 'rmagick', require: 'rmagick'
+gem 'aws-sdk'
+
 group :test do
-  gem 'rspec', '~> 3.1'
+  gem 'rspec'
 end
+
