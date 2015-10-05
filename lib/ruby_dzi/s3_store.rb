@@ -1,5 +1,3 @@
-require 'aws-sdk'
-
 module RubyDzi
   class S3Store
     attr_reader :bucket_name
