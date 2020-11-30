@@ -121,6 +121,7 @@ module RubyDzi
       remove_files!
 
       image = get_image(@image_path)
+      image.auto_orient!
       image.strip! # remove meta information
       image
     end
